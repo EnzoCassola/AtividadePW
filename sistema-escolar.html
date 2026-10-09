@@ -1,0 +1,477 @@
+<title>Controle Escolar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: menu numerado à esquerda (opções 1 a 8) e área de trabalho à direita; no celular o menu vira uma faixa rolável no topo. */
+:root {
+  --bg: #F2F4F7;
+  --surface: #FFFFFF;
+  --ink: #121B26;
+  --muted: #5B6877;
+  --line: #D9DFE6;
+  --accent: #2346C8;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E4EAFB;
+  --ok: #1B7F4B;
+  --ok-soft: #DDF3E6;
+  --warn: #8F5400;
+  --warn-soft: #FBEBCC;
+  --bad: #B3261E;
+  --bad-soft: #FADCD9;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Public Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E141B; --surface: #161E28; --ink: #E7ECF2; --muted: #93A1B1; --line: #263241;
+    --accent: #7C9BFF; --accent-ink: #0B1220; --accent-soft: #1D2A4A;
+    --ok: #5CD08E; --ok-soft: #12301F; --warn: #F0B45A; --warn-soft: #3A2A0E; --bad: #FF8A80; --bad-soft: #3D1B19;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E141B; --surface: #161E28; --ink: #E7ECF2; --muted: #93A1B1; --line: #263241;
+  --accent: #7C9BFF; --accent-ink: #0B1220; --accent-soft: #1D2A4A;
+  --ok: #5CD08E; --ok-soft: #12301F; --warn: #F0B45A; --warn-soft: #3A2A0E; --bad: #FF8A80; --bad-soft: #3D1B19;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 24px; align-items: start; }
+.side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.brand { display: flex; flex-direction: column; gap: 2px; padding-inline: 4px; }
+.brand small { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.brand h1 { font-size: 22px; line-height: 1.15; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 6px; padding: 9px 10px; cursor: pointer; color: var(--muted); white-space: nowrap; }
+.nav button:hover { background: var(--accent-soft); color: var(--ink); }
+.nav button[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+.nav .n { font-family: var(--font-mono); font-size: 12px; width: 18px; opacity: 0.8; }
+.nav .badge { margin-left: auto; font-family: var(--font-mono); font-size: 11px; background: var(--warn-soft); color: var(--warn); border-radius: 99px; padding: 0 7px; }
+.nav button[aria-current="page"] .badge { background: var(--accent-ink); color: var(--accent); }
+.nav .sep { height: 1px; background: var(--line); margin: 6px 4px; }
+.hint { font-size: 12px; color: var(--muted); padding-inline: 4px; margin: 0; }
+.kbd { font-family: var(--font-mono); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+
+.main { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.head h2 { font-size: 28px; line-height: 1.1; }
+.head p { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.demo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 10px 14px; font-size: 13px; }
+.demo button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+
+.split { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.card h3 { font-size: 17px; margin-bottom: 14px; display: flex; align-items: baseline; gap: 8px; }
+.card h3 .count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; }
+form.card { display: flex; flex-direction: column; gap: 12px; }
+form.card h3 { margin-bottom: 2px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label, .field legend { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; padding: 0; }
+input, select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; min-width: 0; }
+input:focus, select:focus { border-color: var(--accent); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.radios { display: flex; gap: 8px; margin-top: 4px; }
+.radios label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 9px; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); background: var(--bg); }
+.radios input { width: auto; accent-color: var(--accent); }
+.radios label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.err { margin: 0; min-height: 0; color: var(--bad); font-size: 13px; }
+.err:empty { display: none; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 600; cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 520px; font-size: 14px; }
+th { text-align: left; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 10px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding-right: 12px; }
+td.mono { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
+.pill { display: inline-block; border-radius: 99px; padding: 1px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.empty { color: var(--muted); padding: 18px 0 6px; margin: 0; }
+.empty a, .linklike { color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.toolbar input { max-width: 260px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.fig { padding: 4px 18px 4px 0; display: flex; flex-direction: column; gap: 2px; }
+.fig + .fig { padding-left: 18px; border-left: 1px solid var(--line); }
+.fig .lbl { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.fig .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.fig .val { font-family: var(--font-mono); font-size: 38px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--line); margin-top: 18px; }
+.bar span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.note { font-size: 13px; color: var(--muted); margin: 14px 0 0; max-width: 70ch; }
+
+pre.ocorr { margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ocorr-box { border: 1px dashed var(--line); border-radius: 8px; padding: 14px; background: var(--bg); }
+.ocorr-box .ttl { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+.ocorr-box b.ok { color: var(--ok); } .ocorr-box b.bad { color: var(--bad); }
+.stack { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.exit { text-align: center; padding: 56px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.exit p { margin: 0; color: var(--muted); max-width: 46ch; }
+
+.toast { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.toast div { background: var(--ink); color: var(--bg); border-radius: 8px; padding: 10px 16px; font-size: 14px; max-width: 480px; box-shadow: 0 6px 24px rgba(0,0,0,.25); transition: opacity .2s, transform .2s; }
+.toast div[hidden] { display: none; }
+.toast div.bad { background: var(--bad); color: #fff; }
+
+@media (max-width: 900px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .side { position: static; }
+  .nav { flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
+  .nav button { width: auto; border: 1px solid var(--line); background: var(--surface); }
+  .nav .sep, .hint { display: none; }
+  .head h2 { font-size: 24px; }
+  .fig, .fig + .fig { padding: 10px 0; border-left: 0; border-bottom: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: reduce) { .toast div { transition: none; } }
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><small>Sistema de</small><h1>Controle Escolar</h1></div>
+    <nav class="nav" id="nav" aria-label="Menu principal"></nav>
+    <p class="hint">Atalho: digite <span class="kbd">1</span> a <span class="kbd">8</span> fora dos campos.</p>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" aria-live="polite"><div id="toast" hidden></div></div>
+
+<script>
+(function () {
+  var KEY = 'controle-escolar-v1';
+  var PERIODOS = ['Manhã', 'Tarde', 'Noite'];
+  var MENU = [
+    ['prof', 'Cadastrar professor'], ['turma', 'Cadastrar turma'], ['disc', 'Cadastrar disciplina'],
+    ['aula', 'Registrar aula'], ['cons', 'Consultar aulas'], ['falta', 'Registrar falta do professor'],
+    ['rel', 'Relatório de aulas'], ['sair', 'Sair do sistema']
+  ];
+  var TITLES = {
+    prof: ['Cadastro de professores', 'Informe nome, disciplina e quantidade de aulas semanais.'],
+    turma: ['Cadastro de turmas', 'Nome, série e período (manhã, tarde ou noite).'],
+    disc: ['Cadastro de disciplinas', 'Nome da disciplina e carga horária semanal.'],
+    aula: ['Registro de aulas', 'Cada aula nasce aguardando a confirmação de presença do professor.'],
+    cons: ['Consulta de aulas', 'Todas as aulas registradas, com a situação de cada uma.'],
+    falta: ['Controle de faltas', 'O professor compareceu? Sim registra a aula como ministrada. Não gera aulas para reposição.'],
+    rel: ['Relatório de aulas', 'Os valores são calculados a partir dos registros feitos neste sistema.'],
+    sair: ['Sistema encerrado', '']
+  };
+
+  var view = 'rel', filtro = 'todas', busca = '', confirmReset = false, toastTimer;
+
+  function today() {
+    var d = new Date(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function seed() {
+    var s = { seq: 20, demo: true, ultima: null,
+      professores: [
+        { id: 1, nome: 'Carlos Silva', disciplina: 'Matemática', semanais: 5 },
+        { id: 2, nome: 'Marina Alves', disciplina: 'Programação Web', semanais: 4 },
+        { id: 3, nome: 'Rafael Costa', disciplina: 'Banco de Dados', semanais: 3 }],
+      turmas: [
+        { id: 4, nome: '2º DS A', serie: '2ª Série', periodo: 'Manhã' },
+        { id: 5, nome: '1º DS B', serie: '1ª Série', periodo: 'Tarde' },
+        { id: 6, nome: '3º RD A', serie: '3ª Série', periodo: 'Noite' }],
+      disciplinas: [
+        { id: 7, nome: 'Matemática', carga: 5 },
+        { id: 8, nome: 'Programação Web', carga: 4 },
+        { id: 9, nome: 'Banco de Dados', carga: 3 }],
+      aulas: [] };
+    function a(id, p, t, d, data, qtd, st) { s.aulas.push({ id: id, prof: p, turma: t, disc: d, data: data, qtd: qtd, status: st }); }
+    a(10, 'Carlos Silva', '2º DS A', 'Matemática', '2026-10-05', 2, 'ministrada');
+    a(11, 'Marina Alves', '2º DS A', 'Programação Web', '2026-10-05', 2, 'ministrada');
+    a(12, 'Carlos Silva', '1º DS B', 'Matemática', '2026-10-06', 2, 'reposicao');
+    a(13, 'Rafael Costa', '3º RD A', 'Banco de Dados', '2026-10-07', 3, 'ministrada');
+    a(14, 'Marina Alves', '1º DS B', 'Programação Web', '2026-10-08', 2, 'aguardando');
+    a(15, 'Carlos Silva', '2º DS A', 'Matemática', '2026-10-09', 2, 'aguardando');
+    return s;
+  }
+  function empty() { return { seq: 1, demo: false, ultima: null, professores: [], turmas: [], disciplinas: [], aulas: [] }; }
+  function load() { try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load() || seed();
+
+  function esc(v) { return String(v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function plural(n) { return n + (n === 1 ? ' aula' : ' aulas'); }
+  function same(a, b) { return a.trim().toLowerCase() === b.trim().toLowerCase(); }
+  function toInt(v) { v = String(v == null ? '' : v).trim(); return /^-?\d+$/.test(v) ? parseInt(v, 10) : NaN; }
+  function field(id, label, html) { return '<div class="field"><label for="' + id + '">' + label + '</label>' + html + '</div>'; }
+  function opts(list, labelFn, ph) { return '<option value="">' + ph + '</option>' + list.map(function (x) { return '<option value="' + x.id + '">' + esc(labelFn(x)) + '</option>'; }).join(''); }
+  function pending() { return S.aulas.filter(function (a) { return a.status === 'aguardando'; }); }
+  function stats() {
+    function sum(f) { return S.aulas.filter(f).reduce(function (n, x) { return n + x.qtd; }, 0); }
+    return { total: sum(function () { return true; }), min: sum(function (x) { return x.status === 'ministrada'; }),
+      rep: sum(function (x) { return x.status === 'reposicao'; }), ag: sum(function (x) { return x.status === 'aguardando'; }) };
+  }
+  function pill(st) {
+    return st === 'ministrada' ? '<span class="pill ok">Ministrada</span>'
+      : st === 'reposicao' ? '<span class="pill bad">Pendente de reposição</span>'
+      : '<span class="pill warn">Aguardando presença</span>';
+  }
+
+  /* ---------- views ---------- */
+  var views = {
+    prof: function () {
+      var list = S.professores;
+      return '<div class="split"><form class="card" data-form="prof" novalidate><h3>Novo professor</h3>' +
+        field('p-nome', 'Nome', '<input id="p-nome" name="nome" autocomplete="off" placeholder="Carlos Silva">') +
+        field('p-disc', 'Disciplina', '<input id="p-disc" name="disciplina" list="dl-disc" autocomplete="off" placeholder="Matemática">' +
+          '<datalist id="dl-disc">' + S.disciplinas.map(function (d) { return '<option value="' + esc(d.nome) + '">'; }).join('') + '</datalist>') +
+        field('p-aulas', 'Aulas semanais', '<input id="p-aulas" name="semanais" type="number" min="1" step="1" inputmode="numeric" placeholder="5">') +
+        '<p class="err" role="alert"></p><button class="btn" type="submit">Cadastrar professor</button></form>' +
+        '<div class="card"><h3>Professores <span class="count">' + list.length + '</span></h3>' +
+        (list.length ? '<div class="tablewrap"><table><thead><tr><th>Nome</th><th>Disciplina</th><th class="num">Aulas/sem.</th></tr></thead><tbody>' +
+          list.map(function (p) { return '<tr><td>' + esc(p.nome) + '</td><td>' + esc(p.disciplina) + '</td><td class="num">' + p.semanais + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Nenhum professor cadastrado ainda.</p>') + '</div></div>';
+    },
+    turma: function () {
+      var list = S.turmas;
+      return '<div class="split"><form class="card" data-form="turma" novalidate><h3>Nova turma</h3>' +
+        field('t-nome', 'Nome', '<input id="t-nome" name="nome" autocomplete="off" placeholder="2º DS A">') +
+        field('t-serie', 'Série', '<input id="t-serie" name="serie" autocomplete="off" placeholder="2ª Série">') +
+        field('t-per', 'Período', '<select id="t-per" name="periodo"><option value="">Selecione</option>' + PERIODOS.map(function (p) { return '<option>' + p + '</option>'; }).join('') + '</select>') +
+        '<p class="err" role="alert"></p><button class="btn" type="submit">Cadastrar turma</button></form>' +
+        '<div class="card"><h3>Turmas <span class="count">' + list.length + '</span></h3>' +
+        (list.length ? '<div class="tablewrap"><table><thead><tr><th>Turma</th><th>Série</th><th>Período</th></tr></thead><tbody>' +
+          list.map(function (t) { return '<tr><td>' + esc(t.nome) + '</td><td>' + esc(t.serie) + '</td><td>' + esc(t.periodo) + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Nenhuma turma cadastrada ainda.</p>') + '</div></div>';
+    },
+    disc: function () {
+      var list = S.disciplinas;
+      return '<div class="split"><form class="card" data-form="disc" novalidate><h3>Nova disciplina</h3>' +
+        field('d-nome', 'Nome', '<input id="d-nome" name="nome" autocomplete="off" placeholder="Programação Web">') +
+        field('d-carga', 'Carga horária semanal (aulas)', '<input id="d-carga" name="carga" type="number" min="1" step="1" inputmode="numeric" placeholder="4">') +
+        '<p class="err" role="alert"></p><button class="btn" type="submit">Cadastrar disciplina</button></form>' +
+        '<div class="card"><h3>Disciplinas <span class="count">' + list.length + '</span></h3>' +
+        (list.length ? '<div class="tablewrap"><table><thead><tr><th>Disciplina</th><th class="num">Aulas semanais</th></tr></thead><tbody>' +
+          list.map(function (d) { return '<tr><td>' + esc(d.nome) + '</td><td class="num">' + d.carga + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Nenhuma disciplina cadastrada ainda.</p>') + '</div></div>';
+    },
+    aula: function () {
+      var faltam = [];
+      if (!S.professores.length) faltam.push('<button class="linklike" data-go="prof">professor</button>');
+      if (!S.turmas.length) faltam.push('<button class="linklike" data-go="turma">turma</button>');
+      if (!S.disciplinas.length) faltam.push('<button class="linklike" data-go="disc">disciplina</button>');
+      var recent = S.aulas.slice().reverse().slice(0, 6);
+      var form = faltam.length
+        ? '<div class="card"><h3>Nova aula</h3><p class="empty">Antes de registrar uma aula, cadastre: ' + faltam.join(', ') + '.</p></div>'
+        : '<form class="card" data-form="aula" novalidate><h3>Nova aula</h3>' +
+          field('a-prof', 'Professor', '<select id="a-prof" name="prof">' + opts(S.professores, function (p) { return p.nome; }, 'Selecione') + '</select>') +
+          field('a-turma', 'Turma', '<select id="a-turma" name="turma">' + opts(S.turmas, function (t) { return t.nome + ' · ' + t.periodo; }, 'Selecione') + '</select>') +
+          field('a-disc', 'Disciplina', '<select id="a-disc" name="disc">' + opts(S.disciplinas, function (d) { return d.nome; }, 'Selecione') + '</select>') +
+          field('a-data', 'Data da aula', '<input id="a-data" name="data" type="date" value="' + today() + '">') +
+          field('a-qtd', 'Aulas previstas no dia', '<input id="a-qtd" name="qtd" type="number" min="1" step="1" inputmode="numeric" placeholder="2">') +
+          '<p class="err" role="alert"></p><button class="btn" type="submit">Registrar aula</button></form>';
+      return '<div class="split">' + form + '<div class="card"><h3>Últimos registros <span class="count">' + S.aulas.length + ' no total</span></h3>' +
+        (recent.length ? '<div class="tablewrap"><table><thead><tr><th>Data</th><th>Professor</th><th>Turma</th><th class="num">Aulas</th></tr></thead><tbody>' +
+          recent.map(function (a) { return '<tr><td class="mono">' + fmt(a.data) + '</td><td>' + esc(a.prof) + '</td><td>' + esc(a.turma) + '</td><td class="num">' + a.qtd + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Nenhuma aula registrada ainda.</p>') + '</div></div>';
+    },
+    cons: function () {
+      var counts = { todas: S.aulas.length, aguardando: 0, ministrada: 0, reposicao: 0 };
+      S.aulas.forEach(function (a) { counts[a.status]++; });
+      var chips = [['todas', 'Todas'], ['aguardando', 'Aguardando'], ['ministrada', 'Ministradas'], ['reposicao', 'Pendentes de reposição']]
+        .map(function (c) { return '<button class="chip" type="button" data-filter="' + c[0] + '" aria-pressed="' + (filtro === c[0]) + '">' + c[1] + ' (' + counts[c[0]] + ')</button>'; }).join('');
+      return '<div class="card"><div class="toolbar"><div class="chips">' + chips + '</div>' +
+        '<input id="busca" type="search" placeholder="Buscar professor, turma ou disciplina" value="' + esc(busca) + '" aria-label="Buscar aulas"></div>' +
+        '<div class="tablewrap" id="cons-table">' + consTable() + '</div></div>';
+    },
+    falta: function () {
+      var pend = pending();
+      var form = pend.length
+        ? '<form class="card" data-form="falta" novalidate><h3>Confirmar presença</h3>' +
+          field('f-aula', 'Aula', '<select id="f-aula" name="aula">' + opts(pend, function (a) { return fmt(a.data) + ' · ' + a.prof + ' · ' + a.turma + ' · ' + plural(a.qtd); }, 'Selecione a aula') + '</select>') +
+          '<fieldset class="field"><legend>Professor compareceu?</legend><div class="radios">' +
+          '<label><input type="radio" name="presente" value="sim"> Sim</label><label><input type="radio" name="presente" value="nao"> Não</label></div></fieldset>' +
+          '<p class="err" role="alert"></p><button class="btn" type="submit">Registrar</button></form>'
+        : '<div class="card"><h3>Confirmar presença</h3><p class="empty">Não há aulas aguardando confirmação. Registre uma aula em <button class="linklike" data-go="aula">Registrar aula</button>.</p></div>';
+      var u = S.aulas.filter(function (a) { return a.id === S.ultima; })[0];
+      var oc = u ? ocorrencia(u) : '<p class="empty">A ocorrência aparece aqui depois do primeiro registro.</p>';
+      return '<div class="split">' + form + '<div class="card"><h3>Última ocorrência</h3>' + oc + '</div></div>';
+    },
+    rel: function () {
+      var s = stats(), t = s.total || 1;
+      function seg(v, c) { return v ? '<span style="width:' + (v / t * 100) + '%;background:var(' + c + ')"></span>' : ''; }
+      var porProf = {};
+      S.aulas.forEach(function (a) {
+        var r = porProf[a.prof] || (porProf[a.prof] = { prev: 0, min: 0, rep: 0, ag: 0 });
+        r.prev += a.qtd; if (a.status === 'ministrada') r.min += a.qtd; else if (a.status === 'reposicao') r.rep += a.qtd; else r.ag += a.qtd;
+      });
+      var names = Object.keys(porProf).sort();
+      var pend = S.aulas.filter(function (a) { return a.status === 'reposicao'; });
+      return '<div class="stack"><div class="card"><div class="figs">' +
+        '<div class="fig"><span class="lbl"><i class="dot"></i>Total de aulas previstas</span><span class="val">' + s.total + '</span></div>' +
+        '<div class="fig"><span class="lbl"><i class="dot" style="background:var(--ok)"></i>Aulas ministradas</span><span class="val">' + s.min + '</span></div>' +
+        '<div class="fig"><span class="lbl"><i class="dot" style="background:var(--bad)"></i>Aulas não ministradas</span><span class="val">' + s.rep + '</span></div>' +
+        '<div class="fig"><span class="lbl"><i class="dot" style="background:var(--bad)"></i>Pendentes de reposição</span><span class="val">' + s.rep + '</span></div></div>' +
+        '<div class="bar" role="img" aria-label="Proporção de aulas por situação">' + seg(s.min, '--ok') + seg(s.rep, '--bad') + seg(s.ag, '--warn') + '</div>' +
+        '<div class="legend"><span><i style="background:var(--ok)"></i>Ministradas ' + s.min + '</span><span><i style="background:var(--bad)"></i>Pendentes de reposição ' + s.rep + '</span><span><i style="background:var(--warn)"></i>Aguardando presença ' + s.ag + '</span></div>' +
+        '<p class="note">Nesta versão, toda aula não ministrada fica pendente de reposição, por isso os dois valores coincidem. Uma aula só entra em um dos grupos: ministrada, não ministrada ou aguardando.</p></div>' +
+        '<div class="split" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><div class="card"><h3>Por professor</h3>' +
+        (names.length ? '<div class="tablewrap"><table><thead><tr><th>Professor</th><th class="num">Previstas</th><th class="num">Minist.</th><th class="num">Repor</th></tr></thead><tbody>' +
+          names.map(function (n) { var r = porProf[n]; return '<tr><td>' + esc(n) + '</td><td class="num">' + r.prev + '</td><td class="num">' + r.min + '</td><td class="num">' + r.rep + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Sem aulas registradas.</p>') + '</div>' +
+        '<div class="card"><h3>Aulas para repor <span class="count">' + s.rep + '</span></h3>' +
+        (pend.length ? '<div class="tablewrap"><table><thead><tr><th>Data</th><th>Professor</th><th>Turma</th><th class="num">Aulas</th></tr></thead><tbody>' +
+          pend.map(function (a) { return '<tr><td class="mono">' + fmt(a.data) + '</td><td>' + esc(a.prof) + '</td><td>' + esc(a.turma) + '</td><td class="num">' + a.qtd + '</td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<p class="empty">Nenhuma aula pendente de reposição.</p>') + '</div></div></div>';
+    },
+    sair: function () {
+      return '<div class="card exit"><h2>Sistema encerrado</h2><p>Os dados desta sessão ficam guardados neste navegador. Ao voltar ao menu, tudo continua como você deixou.</p>' +
+        '<button class="btn" data-go="rel">Voltar ao menu</button></div>';
+    }
+  };
+
+  function consTable() {
+    var q = busca.trim().toLowerCase();
+    var rows = S.aulas.slice().sort(function (a, b) { return a.data < b.data ? 1 : a.data > b.data ? -1 : b.id - a.id; }).filter(function (a) {
+      if (filtro !== 'todas' && a.status !== filtro) return false;
+      return !q || (a.prof + ' ' + a.turma + ' ' + a.disc).toLowerCase().indexOf(q) > -1;
+    });
+    if (!rows.length) return '<p class="empty">' + (S.aulas.length ? 'Nenhuma aula encontrada com esse filtro.' : 'Nenhuma aula registrada ainda.') + '</p>';
+    return '<table><thead><tr><th>Data</th><th>Professor</th><th>Turma</th><th>Disciplina</th><th class="num">Aulas</th><th>Situação</th></tr></thead><tbody>' +
+      rows.map(function (a) { return '<tr><td class="mono">' + fmt(a.data) + '</td><td>' + esc(a.prof) + '</td><td>' + esc(a.turma) + '</td><td>' + esc(a.disc) + '</td><td class="num">' + a.qtd + '</td><td>' + pill(a.status) + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
+  function ocorrencia(a) {
+    var ok = a.status === 'ministrada';
+    return '<div class="ocorr-box"><span class="ttl">REGISTRO DE OCORRÊNCIA</span><pre class="ocorr">' +
+      'Professor: ' + esc(a.prof) + '\nTurma: ' + esc(a.turma) + '\nDisciplina: ' + esc(a.disc) + '\nAulas previstas: ' + a.qtd +
+      '\nProfessor compareceu? ' + (ok ? '<b class="ok">SIM</b>' : '<b class="bad">NÃO</b>') +
+      '\nSituação: ' + (ok ? 'Aula ministrada' : 'Aulas pendentes de reposição') +
+      (ok ? '' : '\nQuantidade: ' + plural(a.qtd)) + '</pre></div>';
+  }
+
+  /* ---------- handlers ---------- */
+  var handlers = {
+    prof: function (f) {
+      var nome = (f.nome || '').trim(), disc = (f.disciplina || '').trim(), n = toInt(f.semanais);
+      if (nome.length < 2) return { error: 'Informe o nome do professor.' };
+      if (!disc) return { error: 'Informe a disciplina do professor.' };
+      if (isNaN(n) || n <= 0) return { error: 'As aulas semanais devem ser um número maior que zero.' };
+      if (S.professores.some(function (p) { return same(p.nome, nome); })) return { error: 'Já existe um professor com esse nome.' };
+      S.professores.push({ id: S.seq++, nome: nome, disciplina: disc, semanais: n });
+      return { ok: 'Professor cadastrado com sucesso!' };
+    },
+    turma: function (f) {
+      var nome = (f.nome || '').trim(), serie = (f.serie || '').trim();
+      if (!nome) return { error: 'Informe o nome da turma.' };
+      if (!serie) return { error: 'Informe a série da turma.' };
+      if (PERIODOS.indexOf(f.periodo) < 0) return { error: 'Período inválido. Escolha manhã, tarde ou noite.' };
+      if (S.turmas.some(function (t) { return same(t.nome, nome); })) return { error: 'Já existe uma turma com esse nome.' };
+      S.turmas.push({ id: S.seq++, nome: nome, serie: serie, periodo: f.periodo });
+      return { ok: 'Turma cadastrada com sucesso!' };
+    },
+    disc: function (f) {
+      var nome = (f.nome || '').trim(), n = toInt(f.carga);
+      if (!nome) return { error: 'Informe o nome da disciplina.' };
+      if (isNaN(n) || n <= 0) return { error: 'A carga horária semanal deve ser maior que zero.' };
+      if (S.disciplinas.some(function (d) { return same(d.nome, nome); })) return { error: 'Essa disciplina já está cadastrada.' };
+      S.disciplinas.push({ id: S.seq++, nome: nome, carga: n });
+      return { ok: 'Disciplina cadastrada com sucesso!' };
+    },
+    aula: function (f) {
+      var p = S.professores.filter(function (x) { return String(x.id) === f.prof; })[0];
+      var t = S.turmas.filter(function (x) { return String(x.id) === f.turma; })[0];
+      var d = S.disciplinas.filter(function (x) { return String(x.id) === f.disc; })[0];
+      var n = toInt(f.qtd);
+      if (!p) return { error: 'Escolha o professor.' };
+      if (!t) return { error: 'Escolha a turma.' };
+      if (!d) return { error: 'Escolha a disciplina.' };
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(f.data || '')) return { error: 'Informe a data da aula.' };
+      if (isNaN(n) || n <= 0) return { error: 'A quantidade de aulas deve ser maior que zero.' };
+      if (S.aulas.some(function (a) { return a.prof === p.nome && a.turma === t.nome && a.disc === d.nome && a.data === f.data; }))
+        return { error: 'Essa aula já foi registrada para esse professor, turma e data.' };
+      S.aulas.push({ id: S.seq++, prof: p.nome, turma: t.nome, disc: d.nome, data: f.data, qtd: n, status: 'aguardando' });
+      return { ok: 'Aula cadastrada com sucesso! Agora confirme a presença do professor.' };
+    },
+    falta: function (f) {
+      var a = S.aulas.filter(function (x) { return String(x.id) === f.aula; })[0];
+      if (!a) return { error: 'Escolha a aula.' };
+      if (a.status !== 'aguardando') return { error: 'Essa aula já teve a presença registrada.' };
+      if (f.presente !== 'sim' && f.presente !== 'nao') return { error: 'Responda se o professor compareceu: sim ou não.' };
+      a.status = f.presente === 'sim' ? 'ministrada' : 'reposicao';
+      S.ultima = a.id;
+      return { ok: a.status === 'ministrada' ? 'Aula registrada como ministrada.' : 'Falta registrada: ' + plural(a.qtd) + ' para reposição.' };
+    }
+  };
+
+  /* ---------- render ---------- */
+  function render() {
+    var np = pending().length;
+    document.getElementById('nav').innerHTML = MENU.map(function (m, i) {
+      return (i === 7 ? '<div class="sep"></div>' : '') + '<button type="button" data-go="' + m[0] + '"' + (view === m[0] ? ' aria-current="page"' : '') + '><span class="n">' + (i + 1) + '</span>' + m[1] +
+        (m[0] === 'falta' && np ? '<span class="badge">' + np + '</span>' : '') + '</button>';
+    }).join('');
+    var t = TITLES[view];
+    document.getElementById('main').innerHTML =
+      (view === 'sair' ? '' : '<div class="head"><h2>' + t[0] + '</h2><p>' + t[1] + '</p></div>') +
+      (S.demo && view !== 'sair' ? '<div class="demo"><span>Dados de exemplo carregados para você testar.</span><button type="button" data-reset>' + (confirmReset ? 'Confirmar: apagar tudo' : 'Apagar exemplos') + '</button></div>' : '') +
+      views[view]();
+  }
+  function go(v) { view = v; confirmReset = false; render(); window.scrollTo(0, 0); }
+  function toast(msg, bad) {
+    var el = document.getElementById('toast');
+    el.textContent = msg; el.className = bad ? 'bad' : ''; el.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.hidden = true; }, 3200);
+  }
+
+  document.addEventListener('submit', function (e) {
+    var form = e.target.closest('form[data-form]'); if (!form) return;
+    e.preventDefault();
+    var fd = {}; new FormData(form).forEach(function (v, k) { fd[k] = v; });
+    var r = handlers[form.dataset.form](fd);
+    if (r.error) { form.querySelector('.err').textContent = r.error; return; }
+    save(); var keep = form.dataset.form === 'falta';
+    render(); toast(r.ok);
+    var first = document.querySelector('#main form input, #main form select'); if (first && !keep) first.focus();
+  });
+  document.addEventListener('click', function (e) {
+    var g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
+    var f = e.target.closest('[data-filter]'); if (f) { filtro = f.dataset.filter; render(); return; }
+    if (e.target.closest('[data-reset]')) {
+      if (!confirmReset) { confirmReset = true; render(); return; }
+      S = empty(); confirmReset = false; save(); render(); toast('Dados apagados. O sistema está vazio.');
+    }
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'busca') { busca = e.target.value; document.getElementById('cons-table').innerHTML = consTable(); }
+    var form = e.target.closest && e.target.closest('form[data-form]'); if (form) form.querySelector('.err').textContent = '';
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'a-prof') {
+      var p = S.professores.filter(function (x) { return String(x.id) === e.target.value; })[0];
+      var d = p && S.disciplinas.filter(function (x) { return same(x.nome, p.disciplina); })[0];
+      if (d) document.getElementById('a-disc').value = String(d.id);
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    var tg = e.target.tagName; if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^[1-8]$/.test(e.key)) go(MENU[+e.key - 1][0]);
+    else if (e.key === '0' || e.key === '9') toast('Opção inválida. Digite um número de 1 a 8.', true);
+  });
+
+  render();
+})();
+</script>
